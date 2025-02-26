@@ -2,7 +2,7 @@ const boardSize = 8;
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
-    'tractor.jpg',  // Трактор
+    'tractor.png',  // Трактор
     'pivo.png',  // Пиво
     'spil.png',  // Спил
 ];
@@ -10,6 +10,7 @@ const blockImages = [
 const board = document.getElementById('board');
 const resetButton = document.getElementById('reset-button');
 const scoreDisplay = document.getElementById('score');
+const timerDisplay = document.getElementById('timer');
 
 let gameBoard = [];
 let selectedBlock = null;
@@ -18,6 +19,8 @@ let timerInterval;
 
 function generateBoard() {
     gameBoard = [];
+    board.innerHTML = ''; // Очищаем доску
+
     for (let i = 0; i < boardSize; i++) {
         const row = [];
         for (let j = 0; j < boardSize; j++) {
@@ -28,8 +31,11 @@ function generateBoard() {
             cell.dataset.row = i;
             cell.dataset.col = j;
 
-            // Добавляем обработчик для кликов по блокам
-            cell.addEventListener('click', (e) => handleBlockClick(i, j, e));
+            // Добавляем обработчик для нажатий на блоки
+            cell.addEventListener('click', (e) => handleBlockClick(i, j, cell));
+
+            // Для мобильных устройств добавим обработку касания
+            cell.addEventListener('touchstart', (e) => handleBlockClick(i, j, cell));
 
             board.appendChild(cell);
         }
@@ -37,42 +43,38 @@ function generateBoard() {
     }
 }
 
-function handleBlockClick(row, col, e) {
-    // Если блок уже выбран, ничего не делать
-    if (selectedBlock && (selectedBlock.row === row && selectedBlock.col === col)) {
-        return; // Нельзя кликнуть на тот же блок
-    }
+function handleBlockClick(row, col, cell) {
+    // Если блок уже выбран, то ничего не делаем
+    if (selectedBlock && selectedBlock.row === row && selectedBlock.col === col) return;
 
-    if (!selectedBlock) {
-        // Если блок еще не выбран, выделяем его
-        selectedBlock = { row, col };
-        const cell = e.target;
-        cell.classList.add('selected');
-    } else {
+    if (selectedBlock) {
         const dx = Math.abs(selectedBlock.row - row);
         const dy = Math.abs(selectedBlock.col - col);
 
-        // Проверяем, что блоки соседние (по горизонтали или вертикали)
+        // Блоки могут меняться местами только если они соседние (по горизонтали или вертикали)
         if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
-            // Меняем блоки местами
+            // Меняем местами блоки
             swapBlocks(selectedBlock.row, selectedBlock.col, row, col);
 
             // Проверка на совпадения
-            setTimeout(() => {
-                if (!checkMatches()) {
-                    setTimeout(() => {
-                        swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
-                    }, 500);
-                } else {
-                    setTimeout(() => refillBoard(), 500);
-                }
-            }, 500);
+            if (!checkMatches()) {
+                setTimeout(() => {
+                    // Возвращаем блоки на места, если нет совпадений
+                    swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
+                }, 500);  // Пауза перед возвратом
+            } else {
+                setTimeout(() => refillBoard(), 500);
+            }
         }
 
         // Убираем выделение с первого блока
         const firstCell = board.children[selectedBlock.row * boardSize + selectedBlock.col];
         firstCell.classList.remove('selected');
         selectedBlock = null;
+    } else {
+        // Если блок не выбран, то выбираем текущий
+        selectedBlock = { row, col, cell };
+        cell.classList.add('selected');
     }
 }
 
@@ -181,7 +183,6 @@ resetButton.addEventListener('click', () => {
 
 function startTimer() {
     let timeLeft = 60;
-    const timerDisplay = document.getElementById('timer');
     
     if (timerInterval) clearInterval(timerInterval);
 
