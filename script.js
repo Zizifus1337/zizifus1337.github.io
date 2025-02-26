@@ -3,7 +3,7 @@ const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
     'tractor.png',  // Трактор
-    'pivo.png',  // Пиво
+    'pivo.jpg',  // Пиво
     'spil.png',  // Спил
 ];
 
