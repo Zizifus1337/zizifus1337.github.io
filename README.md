@@ -1,1 +1,1 @@
-# lenur-tri-v-ryad
+lenur-tri-v-ryad.github.io
