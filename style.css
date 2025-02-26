@@ -1,0 +1,150 @@
+/* Общие стили для body */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); /* Градиентный фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #fff;
+    overflow: hidden; /* Запрещаем прокручивание */
+}
+
+/* Контейнер для игры */
+#game-container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8); /* Прозрачный белый фон */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    width: 85%; /* Увеличим ширину контейнера */
+    max-width: 900px;  /* Установим максимальную ширину */
+    max-height: 850px;  /* Увеличим максимальную высоту */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+}
+
+/* Сетка для игрового поля */
+#board {
+    display: grid;
+    grid-template-columns: repeat(8, 95px); /* Уменьшены размеры ячеек */
+    grid-template-rows: repeat(8, 95px); /* Уменьшены размеры ячеек */
+    gap: 10px;
+    margin-bottom: 30px;
+    border: 5px solid #4CAF50;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    padding: 10px;
+    overflow: hidden;
+    flex-grow: 1; /* Заполняем все пространство */
+}
+
+/* Стили для ячеек игрового поля */
+#board div {
+    width: 95px; /* Уменьшены размеры ячеек */
+    height: 95px; /* Уменьшены размеры ячеек */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#board div:hover {
+    transform: scale(1.1); /* Легкое увеличение при наведении */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Тень при наведении */
+}
+
+/* Стили для выбранных блоков */
+#board div.selected {
+    transform: scale(1.2);
+    transition: transform 0.2s ease;
+}
+
+/* Кнопка "Начать заново" */
+#reset-button {
+    padding: 15px 30px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#reset-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px); /* Легкий подъем кнопки */
+}
+
+#reset-button:active {
+    background-color: #388e3c;
+    transform: translateY(2px); /* Легкое движение вниз при нажатии */
+}
+
+#reset-button:disabled {
+    background-color: #b5e7a0;
+    cursor: not-allowed;
+}
+
+/* Стиль для отображения очков */
+#score {
+    font-size: 1.5em;
+    margin-top: 10px;
+    color: #4CAF50;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Стиль для отображения времени */
+#timer {
+    font-size: 1.5em;
+    color: #ff4081;
+    font-weight: bold;
+    margin-top: 10px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Стиль для отображения сообщений */
+#message {
+    font-size: 2em;
+    color: #ff4081;
+    margin-top: 30px;
+    font-weight: bold;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Анимация исчезновения блоков */
+@keyframes disappear {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+/* Анимация появления блоков */
+@keyframes appear {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
