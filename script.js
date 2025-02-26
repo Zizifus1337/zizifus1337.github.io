@@ -13,7 +13,6 @@ const scoreDisplay = document.getElementById('score');
 
 let gameBoard = [];
 let selectedBlock = null;
-let originalPosition = null;
 let score = 0;
 let timerInterval;
 
@@ -29,19 +28,8 @@ function generateBoard() {
             cell.dataset.row = i;
             cell.dataset.col = j;
 
-            // Добавляем обработчики для мобильных устройств
-            cell.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Чтобы предотвратить стандартное поведение касания (например, прокрутка страницы)
-                handleTouchStart(i, j, cell);
-            });
-            cell.addEventListener('touchmove', (e) => {
-                e.preventDefault(); // Чтобы предотвратить стандартное поведение
-                handleTouchMove(i, j, cell);
-            });
-            cell.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Чтобы предотвратить стандартное поведение
-                handleTouchEnd(i, j, cell);
-            });
+            // Добавляем обработчик для нажатий на блоки
+            cell.addEventListener('click', (e) => handleBlockClick(i, j, cell));
 
             board.appendChild(cell);
         }
@@ -49,40 +37,30 @@ function generateBoard() {
     }
 }
 
-function handleTouchStart(row, col, cell) {
-    selectedBlock = { row, col, cell };
-    originalPosition = { row, col };
-    cell.classList.add('selected');  // Увеличиваем блок при касании
-}
-
-function handleTouchMove(row, col, cell) {
-    if (!selectedBlock) return;
-    const dx = Math.abs(selectedBlock.row - row);
-    const dy = Math.abs(selectedBlock.col - col);
-    if (dx + dy === 1) {
-        cell.style.cursor = 'pointer'; // Меняем курсор на мобильном
-    }
-}
-
-function handleTouchEnd(row, col, cell) {
-    if (!selectedBlock) return;
-
-    const dx = Math.abs(selectedBlock.row - row);
-    const dy = Math.abs(selectedBlock.col - col);
-    if (dx + dy === 1) {
-        swapBlocks(selectedBlock.row, selectedBlock.col, row, col);
+function handleBlockClick(row, col, cell) {
+    if (selectedBlock) {
+        const selectedCell = board.children[selectedBlock.row * boardSize + selectedBlock.col];
         
+        // Меняем местами выбранный блок и текущий
+        swapBlocks(selectedBlock.row, selectedBlock.col, row, col);
+
         // Проверка на совпадения
         if (!checkMatches()) {
             setTimeout(() => {
-                returnBlockToOriginalPosition();
-            }, 500);  // Пауза перед возвращением
+                // Возвращаем блоки на места, если нет совпадений
+                swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
+            }, 500);  // Пауза перед возвратом
         } else {
             setTimeout(() => refillBoard(), 500);
         }
+        
+        // Сбрасываем выбор блока
+        selectedBlock = null;
+    } else {
+        // Если блок не выбран, выбираем текущий
+        selectedBlock = { row, col, cell };
+        cell.classList.add('selected');
     }
-    selectedBlock.cell.classList.remove('selected');  // Убираем увеличение при отпускании
-    selectedBlock = null;
 }
 
 function swapBlocks(row1, col1, row2, col2) {
@@ -166,23 +144,6 @@ function refillBoard() {
             }
         }
     }
-}
-
-function returnBlockToOriginalPosition() {
-    const cell = board.children[selectedBlock.row * boardSize + selectedBlock.col];
-    const originalCell = board.children[originalPosition.row * boardSize + originalPosition.col];
-    
-    // Получаем координаты исходной ячейки
-    const rect = originalCell.getBoundingClientRect();
-
-    // Плавное перемещение блока обратно на исходное место
-    cell.style.transition = 'transform 0.3s ease';
-    cell.style.transform = `translate(${rect.left - cell.getBoundingClientRect().left}px, ${rect.top - cell.getBoundingClientRect().top}px)`;
-
-    // Возвращаем блок на место
-    setTimeout(() => {
-        cell.style.transform = 'none';
-    }, 300);
 }
 
 function updateScore(lines) {
