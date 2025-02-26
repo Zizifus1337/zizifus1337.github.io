@@ -131,7 +131,7 @@ function checkMatches() {
         });
 
         // Начисляем очки
-        updateScore(matches.length);
+        updateScore(matches);
 
         // Пауза перед перезаполнением поля
         setTimeout(() => {
@@ -161,15 +161,22 @@ function refillBoard() {
     }
 }
 
-function updateScore(lines) {
-    // Начисление очков
-    if (lines === 3) {
-        score += 10;
-    } else if (lines === 4) {
-        score += 15;
-    } else if (lines === 5) {
-        score += 25;
-    }
+function updateScore(matches) {
+    let scoreIncrease = 0;
+
+    matches.forEach(match => {
+        // Количество совпадений в одной линии
+        const matchLength = match.length;
+        if (matchLength === 3) {
+            scoreIncrease += 10;
+        } else if (matchLength === 4) {
+            scoreIncrease += 15;
+        } else if (matchLength === 5) {
+            scoreIncrease += 25;
+        }
+    });
+
+    score += scoreIncrease;
     scoreDisplay.textContent = `Очки: ${score}`;
 }
 
