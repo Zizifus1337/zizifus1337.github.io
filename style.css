@@ -30,8 +30,8 @@ body {
 /* Сетка для игрового поля */
 #board {
     display: grid;
-    grid-template-columns: repeat(7, 85px); /* Уменьшено на 1 столбец */
-    grid-template-rows: repeat(8, 85px); /* Количество строк остается прежним */
+    grid-template-columns: repeat(8, 85px); /* Уменьшены размеры ячеек */
+    grid-template-rows: repeat(8, 85px); /* Уменьшены размеры ячеек */
     gap: 5px;
     margin-bottom: 20px;
     border: 5px solid #4CAF50;
@@ -160,8 +160,8 @@ body {
 
     /* Уменьшаем размер игрового поля */
     #board {
-        grid-template-columns: repeat(7, 70px); /* Уменьшено на 1 столбец */
-        grid-template-rows: repeat(8, 70px); /* Количество строк остается прежним */
+        grid-template-columns: repeat(8, 70px); /* Меньше ячеек */
+        grid-template-rows: repeat(8, 70px); /* Меньше ячеек */
         gap: 5px;
     }
 
@@ -192,8 +192,8 @@ body {
 
     /* Уменьшаем размер игрового поля */
     #board {
-        grid-template-columns: repeat(7, 60px); /* Уменьшено на 1 столбец */
-        grid-template-rows: repeat(8, 60px); /* Количество строк остается прежним */
+        grid-template-columns: repeat(8, 60px); /* Меньше ячеек */
+        grid-template-rows: repeat(8, 60px); /* Меньше ячеек */
         gap: 5px;
     }
 
