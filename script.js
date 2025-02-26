@@ -2,7 +2,7 @@ const boardSize = 8;
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
-    'tractor.png',  // Трактор
+    'tractor.jpg',  // Трактор
     'pivo.png',  // Пиво
     'spil.png',  // Спил
 ];
@@ -38,7 +38,13 @@ function generateBoard() {
 }
 
 function handleBlockClick(row, col, e) {
+    // Если блок уже выбран, ничего не делать
+    if (selectedBlock && (selectedBlock.row === row && selectedBlock.col === col)) {
+        return; // Нельзя кликнуть на тот же блок
+    }
+
     if (!selectedBlock) {
+        // Если блок еще не выбран, выделяем его
         selectedBlock = { row, col };
         const cell = e.target;
         cell.classList.add('selected');
