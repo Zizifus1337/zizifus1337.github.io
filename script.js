@@ -14,7 +14,6 @@ const scoreDisplay = document.getElementById('score');
 let gameBoard = [];
 let selectedBlock = null;
 let score = 0;
-let startTouch = null;
 let timerInterval;
 
 function generateBoard() {
@@ -29,9 +28,8 @@ function generateBoard() {
             cell.dataset.row = i;
             cell.dataset.col = j;
 
-            // Добавляем обработчик для касания блоков
-            cell.addEventListener('touchstart', (e) => handleTouchStart(i, j, e));
-            cell.addEventListener('touchend', (e) => handleTouchEnd(i, j, e));
+            // Добавляем обработчик для кликов по блокам
+            cell.addEventListener('click', (e) => handleBlockClick(i, j, e));
 
             board.appendChild(cell);
         }
@@ -39,62 +37,37 @@ function generateBoard() {
     }
 }
 
-function handleTouchStart(row, col, e) {
-    // Запоминаем начальную точку касания для определения свайпа
-    startTouch = e.touches[0];
-    selectedBlock = { row, col };
-}
+function handleBlockClick(row, col, e) {
+    if (!selectedBlock) {
+        selectedBlock = { row, col };
+        const cell = e.target;
+        cell.classList.add('selected');
+    } else {
+        const dx = Math.abs(selectedBlock.row - row);
+        const dy = Math.abs(selectedBlock.col - col);
 
-function handleTouchEnd(row, col, e) {
-    if (!startTouch) return;
+        // Проверяем, что блоки соседние (по горизонтали или вертикали)
+        if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+            // Меняем блоки местами
+            swapBlocks(selectedBlock.row, selectedBlock.col, row, col);
 
-    const endTouch = e.changedTouches[0];
-    const deltaX = endTouch.pageX - startTouch.pageX;
-    const deltaY = endTouch.pageY - startTouch.pageY;
-
-    // Если свайп был достаточно длинным, меняем местами блоки
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30) {
-        // Горизонтальный свайп
-        if (deltaX > 0) {
-            // Свайп вправо
-            if (col < boardSize - 1) {
-                swapBlocks(row, col, row, col + 1);
-            }
-        } else {
-            // Свайп влево
-            if (col > 0) {
-                swapBlocks(row, col, row, col - 1);
-            }
-        }
-    } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 30) {
-        // Вертикальный свайп
-        if (deltaY > 0) {
-            // Свайп вниз
-            if (row < boardSize - 1) {
-                swapBlocks(row, col, row + 1, col);
-            }
-        } else {
-            // Свайп вверх
-            if (row > 0) {
-                swapBlocks(row, col, row - 1, col);
-            }
-        }
-    }
-
-    // Проверка на совпадения после свапа
-    setTimeout(() => {
-        if (!checkMatches()) {
-            // Если совпадений нет, возвращаем блоки обратно
+            // Проверка на совпадения
             setTimeout(() => {
-                swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
+                if (!checkMatches()) {
+                    setTimeout(() => {
+                        swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
+                    }, 500);
+                } else {
+                    setTimeout(() => refillBoard(), 500);
+                }
             }, 500);
-        } else {
-            setTimeout(() => refillBoard(), 500);
         }
-    }, 500);
 
-    // Сбрасываем начальную точку касания
-    startTouch = null;
+        // Убираем выделение с первого блока
+        const firstCell = board.children[selectedBlock.row * boardSize + selectedBlock.col];
+        firstCell.classList.remove('selected');
+        selectedBlock = null;
+    }
 }
 
 function swapBlocks(row1, col1, row2, col2) {
