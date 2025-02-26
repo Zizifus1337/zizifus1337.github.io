@@ -2,7 +2,7 @@ const boardSize = 8;
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
-    'tractor.png',  // Трактор
+    'tractor.jpg',  // Трактор
     'pivo.jpg',  // Пиво
     'spil.png',  // Спил
 ];
