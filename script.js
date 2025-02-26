@@ -2,22 +2,19 @@ const boardSize = 8;
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
-    'tractor.jpg',  // Трактор
-    'pivo.jpg',  // Пиво
+    'tractor.png',  // Трактор
+    'pivo.png',  // Пиво
     'spil.png',  // Спил
 ];
 
 const board = document.getElementById('board');
 const resetButton = document.getElementById('reset-button');
-const scoreElement = document.getElementById('score');
-const timerElement = document.getElementById('timer');
-const messageElement = document.getElementById('message');
+const scoreDisplay = document.getElementById('score');
 
 let gameBoard = [];
 let selectedBlock = null;
 let originalPosition = null;
 let score = 0;
-let timeLeft = 60; // 60 секунд
 let timerInterval;
 
 function generateBoard() {
@@ -31,31 +28,43 @@ function generateBoard() {
             cell.style.backgroundImage = `url(${randomImage})`;
             cell.dataset.row = i;
             cell.dataset.col = j;
-            cell.addEventListener('mousedown', () => handleMouseDown(i, j, cell));
-            cell.addEventListener('mouseover', () => handleMouseOver(i, j, cell));
-            cell.addEventListener('mouseup', () => handleMouseUp(i, j, cell));
+
+            // Добавляем обработчики для мобильных устройств
+            cell.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Чтобы предотвратить стандартное поведение касания (например, прокрутка страницы)
+                handleTouchStart(i, j, cell);
+            });
+            cell.addEventListener('touchmove', (e) => {
+                e.preventDefault(); // Чтобы предотвратить стандартное поведение
+                handleTouchMove(i, j, cell);
+            });
+            cell.addEventListener('touchend', (e) => {
+                e.preventDefault(); // Чтобы предотвратить стандартное поведение
+                handleTouchEnd(i, j, cell);
+            });
+
             board.appendChild(cell);
         }
         gameBoard.push(row);
     }
 }
 
-function handleMouseDown(row, col, cell) {
+function handleTouchStart(row, col, cell) {
     selectedBlock = { row, col, cell };
     originalPosition = { row, col };
-    cell.classList.add('selected');  // Увеличиваем блок при нажатии
+    cell.classList.add('selected');  // Увеличиваем блок при касании
 }
 
-function handleMouseOver(row, col, cell) {
+function handleTouchMove(row, col, cell) {
     if (!selectedBlock) return;
     const dx = Math.abs(selectedBlock.row - row);
     const dy = Math.abs(selectedBlock.col - col);
     if (dx + dy === 1) {
-        cell.style.cursor = 'pointer';
+        cell.style.cursor = 'pointer'; // Меняем курсор на мобильном
     }
 }
 
-function handleMouseUp(row, col, cell) {
+function handleTouchEnd(row, col, cell) {
     if (!selectedBlock) return;
 
     const dx = Math.abs(selectedBlock.row - row);
@@ -128,6 +137,9 @@ function checkMatches() {
             });
         });
 
+        // Начисляем очки
+        updateScore(matches.length);
+
         // Пауза перед перезаполнением поля
         setTimeout(() => {
             refillBoard();
@@ -136,11 +148,6 @@ function checkMatches() {
                 setTimeout(refillBoard, 500);
             }
         }, 500);
-
-        // Добавляем очки
-        score += matches.length * 10;  // Считаем по числу совпадений
-        scoreElement.textContent = `Очки: ${score}`;
-
         return true;
     }
 
@@ -178,31 +185,41 @@ function returnBlockToOriginalPosition() {
     }, 300);
 }
 
-function startTimer() {
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        timerElement.textContent = `Время: ${timeLeft} секунд`;
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            messageElement.textContent = "Ленур победил!";
-            resetButton.disabled = false;
-        }
-    }, 1000);
+function updateScore(lines) {
+    // Начисление очков
+    if (lines === 3) {
+        score += 10;
+    } else if (lines === 4) {
+        score += 15;
+    } else if (lines === 5) {
+        score += 25;
+    }
+    scoreDisplay.textContent = `Очки: ${score}`;
 }
 
 resetButton.addEventListener('click', () => {
     board.innerHTML = '';
-    score = 0;
-    scoreElement.textContent = `Очки: ${score}`;
-    timeLeft = 60;
-    timerElement.textContent = `Время: ${timeLeft} секунд`;
-    messageElement.textContent = '';
-    resetButton.disabled = true;
-
     generateBoard();
+    score = 0;
+    scoreDisplay.textContent = `Очки: ${score}`;
     startTimer();
 });
+
+function startTimer() {
+    let timeLeft = 60;
+    const timerDisplay = document.getElementById('timer');
+    
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('Время вышло! Ленур победил!');
+        }
+        timerDisplay.textContent = `Время: ${timeLeft}s`;
+    }, 1000);
+}
 
 generateBoard();
 startTimer();
