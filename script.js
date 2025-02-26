@@ -59,7 +59,7 @@ function handleBlockClick(row, col, cell) {
     } else {
         // Если блок не выбран, выбираем текущий
         selectedBlock = { row, col, cell };
-        cell.classList.add('selected');
+        cell.classList.add('selected');  // Выделяем блок
     }
 }
 
