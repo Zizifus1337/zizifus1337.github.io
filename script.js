@@ -1,5 +1,5 @@
 const boardSize = 8;
-const blockSize = 70; // Обновленный размер блока для лучшего отображения
+const blockSize = 70;
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
@@ -17,6 +17,13 @@ let gameBoard = [];
 let selectedBlock = null;
 let score = 0;
 let timerInterval;
+let timeLeft = 60; // Время в секундах
+
+function addAnimationEndListener(element, className) {
+    element.addEventListener('animationend', function() {
+        element.classList.remove(className);
+    }, { once: true });
+}
 
 function generateBoard() {
     gameBoard = [];
@@ -38,6 +45,7 @@ function generateBoard() {
             cell.classList.add('appearing');
             cell.addEventListener('click', () => handleBlockClick(i, j, cell));
             board.appendChild(cell);
+            addAnimationEndListener(cell, 'appearing');
         }
         gameBoard.push(row);
     }
@@ -76,7 +84,7 @@ function swapBlocks(row1, col1, row2, col2) {
 
 function checkMatches() {
     let matches = [];
-    // Проверка по горизонтали
+    // Горизонтальные совпадения
     for (let row = 0; row < boardSize; row++) {
         for (let col = 0; col < boardSize - 2; col++) {
             const image = gameBoard[row][col];
@@ -85,7 +93,8 @@ function checkMatches() {
             }
         }
     }
-    // Проверка по вертикали
+
+    // Вертикальные совпадения
     for (let col = 0; col < boardSize; col++) {
         for (let row = 0; row < boardSize - 2; row++) {
             const image = gameBoard[row][col];
@@ -95,24 +104,13 @@ function checkMatches() {
         }
     }
 
-    // Проверка для сжигания блоков, если 2 блока по горизонтали и 2 блока по вертикали одного блока
-    for (let row = 0; row < boardSize - 1; row++) {
-        for (let col = 0; col < boardSize - 1; col++) {
-            const image = gameBoard[row][col];
-            if (image &&
-                gameBoard[row + 1][col] === image &&
-                gameBoard[row][col + 1] === image &&
-                gameBoard[row + 1][col + 1] === image) {
-                matches.push([ [row, col], [row + 1, col], [row, col + 1], [row + 1, col + 1] ]);
-            }
-        }
-    }
-
+    // Если есть совпадения
     if (matches.length > 0) {
         matches.flat().forEach(([r, c]) => {
             gameBoard[r][c] = null;
             let cell = board.children[r * boardSize + c];
             cell.classList.add('disappearing');
+            addAnimationEndListener(cell, 'disappearing');
             setTimeout(() => cell.style.backgroundImage = '', 500);
         });
         updateScore(matches);
@@ -123,38 +121,32 @@ function checkMatches() {
 }
 
 function refillBoard() {
-    // Проходим по каждой колонке
     for (let col = 0; col < boardSize; col++) {
         let emptyCells = [];
-        
-        // Собираем все пустые ячейки в колонке
         for (let row = boardSize - 1; row >= 0; row--) {
             if (gameBoard[row][col] === null) {
-                emptyCells.push(row); // Ячейка пуста
+                emptyCells.push(row);
             } else if (emptyCells.length > 0) {
-                // Если есть пустые ячейки, сдвигаем блоки вниз
                 let newRow = emptyCells.shift();
-                gameBoard[newRow][col] = gameBoard[row][col];  // Перемещаем блок на пустую ячейку
-                gameBoard[row][col] = null;  // Очищаем старую ячейку
-
+                gameBoard[newRow][col] = gameBoard[row][col];
+                gameBoard[row][col] = null;
                 let cell = board.children[newRow * boardSize + col];
-                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage; // Переносим изображение
-                cell.classList.add('falling');  // Добавляем класс для анимации падения
-                board.children[row * boardSize + col].style.backgroundImage = ''; // Очищаем старую ячейку
+                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
+                cell.classList.add('falling');
+                addAnimationEndListener(cell, 'falling');
+                board.children[row * boardSize + col].style.backgroundImage = '';
+                emptyCells.push(row);
             }
         }
-
-        // Теперь заполняем оставшиеся пустые ячейки новыми блоками
         emptyCells.forEach(row => {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             gameBoard[row][col] = randomImage;
             let cell = board.children[row * boardSize + col];
-            cell.style.backgroundImage = `url(${randomImage})`;  // Заполняем новой картинкой
-            cell.classList.add('appearing');  // Добавляем класс для анимации появления
+            cell.style.backgroundImage = `url(${randomImage})`;
+            cell.classList.add('appearing');
+            addAnimationEndListener(cell, 'appearing');
         });
     }
-    
-    // После того как все блоки опустились и новые добавились, снова проверяем на совпадения
     setTimeout(checkMatches, 600);
 }
 
@@ -164,11 +156,35 @@ function updateScore(matches) {
     scoreDisplay.textContent = `Очки: ${score}`;
 }
 
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval); // Останавливаем предыдущий таймер
+
+    timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+            timeLeft--;
+            timerDisplay.textContent = `Время: ${timeLeft} секунд`;
+        } else {
+            clearInterval(timerInterval);
+            alert('Время истекло! Игра закончена!');
+            disableGame();
+        }
+    }, 1000);
+}
+
+function disableGame() {
+    const cells = board.querySelectorAll('div');
+    cells.forEach(cell => {
+        cell.style.pointerEvents = 'none'; // Отключаем клики по ячейкам
+    });
+}
+
 resetButton.addEventListener('click', () => {
     board.innerHTML = '';
     generateBoard();
     score = 0;
     scoreDisplay.textContent = `Очки: ${score}`;
+    timeLeft = 60; // Сброс таймера
+    timerDisplay.textContent = `Время: ${timeLeft} секунд`;
     startTimer();
 });
 
