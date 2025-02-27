@@ -1,4 +1,4 @@
-/* Общие стили для body */
+/* Основные стили */
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
@@ -19,32 +19,34 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     width: 90%;
-    max-width: 650px;
+    max-width: 500px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 /* Игровое поле */
 #board {
     display: grid;
-    grid-template-columns: repeat(8, 70px);
-    grid-template-rows: repeat(8, 70px);
-    gap: 5px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 2px;
+    margin-bottom: 15px;
     border: 4px solid #4CAF50;
     border-radius: 15px;
     background: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    padding: 10px;
-    position: relative;
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+    margin: 0 auto;
 }
 
 /* Стили для ячеек игрового поля */
 #board div {
-    width: 70px;
-    height: 70px;
     background-size: cover;
     background-position: center;
     display: flex;
@@ -57,103 +59,135 @@ body {
     position: relative;
 }
 
-/* Эффект при наведении на блок */
-#board div:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Анимации */
-
-/* Анимация исчезновения блоков */
-@keyframes disappear {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.5); }
-}
-
-#board div.disappearing {
-    animation: disappear 0.6s ease-out forwards;
-}
-
 /* Стили для кнопки "Начать заново" */
 #reset-button {
-    padding: 12px 25px;
+    padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 25px;
-    font-size: 1.1em;
+    font-size: 1em;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     margin-top: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-#reset-button:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Стиль для отображения очков и времени */
+/* Стили для отображения очков и времени */
 #score, #timer {
-    font-size: 1.3em;
+    font-size: 1.2em;
     margin-top: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-#score {
-    color: #4CAF50;
+/* Анимация для появления блока */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-#timer {
-    color: #ff4081;
+/* Анимация для исчезновения блока */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* Анимация для "сжигания" блока */
+@keyframes burn {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+        filter: brightness(0.7);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.5);
+        filter: brightness(0);
+    }
+}
+
+/* Применяем анимации к классам */
+.appearing {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.disappearing {
+    animation: fadeOut 0.5s ease-in forwards;
+}
+
+.falling {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.burning {
+    animation: burn 0.8s ease-out forwards;
 }
 
 /* Медиа-запросы для мобильных устройств */
 @media screen and (max-width: 600px) {
     #game-container {
-        width: 95%;
+        width: 90%;
     }
 
     #board {
-        grid-template-columns: repeat(8, 60px);
-        grid-template-rows: repeat(8, 60px);
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        width: 100%;
+        max-width: 280px;
+        height: 280px;
+        gap: 1px;
+        margin: 0 auto;
     }
 
     #board div {
-        width: 60px;
-        height: 60px;
-    }
-
-    #reset-button {
-        padding: 10px 20px;
-        font-size: 1em;
+        width: 100%;
+        height: 100%;
     }
 
     #score, #timer {
-        font-size: 1.1em;
+        font-size: 1em;
+    }
+
+    #reset-button {
+        padding: 8px 15px;
+        font-size: 0.9em;
     }
 }
 
 @media screen and (max-width: 400px) {
     #board {
-        grid-template-columns: repeat(8, 50px);
-        grid-template-rows: repeat(8, 50px);
-    }
-
-    #board div {
-        width: 50px;
-        height: 50px;
-    }
-
-    #reset-button {
-        padding: 8px 18px;
-        font-size: 0.9em;
+        max-width: 220px;
+        height: 220px;
     }
 
     #score, #timer {
-        font-size: 1em;
+        font-size: 0.9em;
+    }
+
+    #reset-button {
+        padding: 8px 12px;
+        font-size: 0.8em;
     }
 }
