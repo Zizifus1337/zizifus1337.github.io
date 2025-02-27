@@ -140,4 +140,64 @@ function checkMatches() {
             setTimeout(() => cell.style.backgroundImage = '', 500);
         });
         updateScore(matches);
-        if (
+        if (matches.length >= 5) {
+            fiveLinesSound.play();
+        }
+    }
+    return matches.length > 0;
+}
+
+function refillBoard() {
+    // Заполнение пустых клеток новыми блоками
+    for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize; col++) {
+            if (!gameBoard[row][col]) {
+                const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                gameBoard[row][col] = randomImage;
+                const cell = board.children[row * boardSize + col];
+                cell.style.backgroundImage = `url(${randomImage})`;
+                cell.classList.add('falling');
+                addAnimationEndListener(cell, 'falling');
+            }
+        }
+    }
+
+    // Проверка на совпадения после обновления доски
+    setTimeout(checkMatches, 500);
+}
+
+function updateScore(matches) {
+    const matchCount = matches.length;
+    score += matchCount * 10;
+    scoreDisplay.textContent = `Очки: ${score}`;
+}
+
+// Таймер
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Время: ${timeLeft}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endSound.play();
+            alert('Время вышло! Игра окончена!');
+        }
+    }, 1000);
+}
+
+function resetGame() {
+    score = 0;
+    timeLeft = 60;
+    scoreDisplay.textContent = `Очки: ${score}`;
+    timerDisplay.textContent = `Время: ${timeLeft}`;
+    clearInterval(timerInterval);
+    startTimer();
+    generateBoard();
+}
+
+resetButton.addEventListener('click', resetGame);
+
+// Начать игру
+startSound.play();
+startTimer();
+generateBoard();
