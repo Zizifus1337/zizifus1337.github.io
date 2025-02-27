@@ -1,5 +1,5 @@
 const boardSize = 8;
-const blockSize = 80; // Размер блока
+const blockSize = 40; // Уменьшенный размер блока
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
@@ -21,8 +21,8 @@ let timerInterval;
 function generateBoard() {
     gameBoard = [];
     board.innerHTML = '';
-    board.style.gridTemplateColumns = repeat(${boardSize}, ${blockSize}px);
-    board.style.gridTemplateRows = repeat(${boardSize}, ${blockSize}px);
+    board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
+    board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
 
     for (let i = 0; i < boardSize; i++) {
         const row = [];
@@ -30,9 +30,9 @@ function generateBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             row.push(randomImage);
             const cell = document.createElement('div');
-            cell.style.width = ${blockSize}px;
-            cell.style.height = ${blockSize}px;
-            cell.style.backgroundImage = url(${randomImage});
+            cell.style.width = `${blockSize}px`;
+            cell.style.height = `${blockSize}px`;
+            cell.style.backgroundImage = `url(${randomImage})`;
             cell.dataset.row = i;
             cell.dataset.col = j;
             cell.addEventListener('click', () => handleBlockClick(i, j, cell));
@@ -127,7 +127,7 @@ function refillBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             gameBoard[row][col] = randomImage;
             let cell = board.children[row * boardSize + col];
-            cell.style.backgroundImage = url(${randomImage});
+            cell.style.backgroundImage = `url(${randomImage})`;
             cell.style.animation = 'appear 0.5s ease-in';
         });
     }
@@ -137,14 +137,14 @@ function refillBoard() {
 function updateScore(matches) {
     let scoreIncrease = matches.reduce((sum, match) => sum + (match.length === 3 ? 10 : match.length === 4 ? 15 : 25), 0);
     score += scoreIncrease;
-    scoreDisplay.textContent = Очки: ${score};
+    scoreDisplay.textContent = `Очки: ${score}`;
 }
 
 resetButton.addEventListener('click', () => {
     board.innerHTML = '';
     generateBoard();
     score = 0;
-    scoreDisplay.textContent = Очки: ${score};
+    scoreDisplay.textContent = `Очки: ${score}`;
     startTimer();
 });
 
