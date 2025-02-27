@@ -74,7 +74,7 @@ function checkMatches() {
     for (let row = 0; row < boardSize; row++) {
         for (let col = 0; col < boardSize - 2; col++) {
             const image = gameBoard[row][col];
-            if (image !== 'bomb' && gameBoard[row][col + 1] === image && gameBoard[row][col + 2] === image) {
+            if (image && gameBoard[row][col + 1] === image && gameBoard[row][col + 2] === image) {
                 matches.push([ [row, col], [row, col + 1], [row, col + 2] ]);
             }
         }
@@ -82,7 +82,7 @@ function checkMatches() {
     for (let col = 0; col < boardSize; col++) {
         for (let row = 0; row < boardSize - 2; row++) {
             const image = gameBoard[row][col];
-            if (image !== 'bomb' && gameBoard[row + 1][col] === image && gameBoard[row + 2][col] === image) {
+            if (image && gameBoard[row + 1][col] === image && gameBoard[row + 2][col] === image) {
                 matches.push([ [row, col], [row + 1, col], [row + 2, col] ]);
             }
         }
@@ -90,36 +90,37 @@ function checkMatches() {
     if (matches.length > 0) {
         matches.flat().forEach(([r, c]) => {
             gameBoard[r][c] = null;
-            board.children[r * boardSize + c].style.animation = 'disappear 0.5s forwards';
+            board.children[r * boardSize + c].style.backgroundImage = '';
         });
         updateScore(matches);
-        setTimeout(() => {
-            refillBoard();
-            if (checkMatches()) setTimeout(refillBoard, 500);
-        }, 500);
+        setTimeout(refillBoard, 500);
         return true;
     }
     return false;
 }
 
 function refillBoard() {
-    for (let row = boardSize - 1; row >= 0; row--) {
-        for (let col = 0; col < boardSize; col++) {
+    for (let col = 0; col < boardSize; col++) {
+        let emptyCells = [];
+        for (let row = boardSize - 1; row >= 0; row--) {
             if (gameBoard[row][col] === null) {
-                let newRow = row;
-                while (newRow >= 0 && gameBoard[newRow][col] === null) newRow--;
-                if (newRow >= 0) {
-                    gameBoard[row][col] = gameBoard[newRow][col];
-                    gameBoard[newRow][col] = null;
-                    board.children[row * boardSize + col].style.backgroundImage = board.children[newRow * boardSize + col].style.backgroundImage;
-                } else {
-                    const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
-                    gameBoard[row][col] = randomImage;
-                    board.children[row * boardSize + col].style.backgroundImage = `url(${randomImage})`;
-                }
+                emptyCells.push(row);
+            } else if (emptyCells.length > 0) {
+                let newRow = emptyCells.shift();
+                gameBoard[newRow][col] = gameBoard[row][col];
+                gameBoard[row][col] = null;
+                board.children[newRow * boardSize + col].style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
+                board.children[row * boardSize + col].style.backgroundImage = '';
+                emptyCells.push(row);
             }
         }
+        emptyCells.forEach(row => {
+            const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+            gameBoard[row][col] = randomImage;
+            board.children[row * boardSize + col].style.backgroundImage = `url(${randomImage})`;
+        });
     }
+    setTimeout(checkMatches, 500);
 }
 
 function updateScore(matches) {
