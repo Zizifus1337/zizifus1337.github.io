@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ленур в ряд</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5dc; /* Бежевый фон */
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #8B4513; /* Коричневый цвет */
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .score-box, .timer-box {
+            background-color: #deb887; /* Песочный цвет */
+            border: 2px solid #8B4513;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            text-align: center;
+            margin: 0 5px;
+        }
+
+        .board-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #board {
+            display: grid;
+            position: relative;
+            background-color: rgba(139, 69, 19, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            touch-action: none;
+        }
+
+        #board div {
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        #board div.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00;
+            z-index: 10;
+        }
+
+        #board div.appearing {
+            animation: appear 0.3s ease-out;
+        }
+
+        #board div.disappearing {
+            animation: disappear 0.3s ease-in;
+        }
+
+        #board div.falling {
+            animation: fall 0.3s ease-in;
+        }
+
+        @keyframes appear {
+            from { opacity: 0; transform: scale(0); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes disappear {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0); }
+        }
+
+        @keyframes fall {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        #reset-button {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+            margin: 10px 0;
+        }
+
+        #reset-button:hover, #reset-button:active {
+            background-color: #6b3510;
+        }
+
+        .controls {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b3510;
+            padding: 10px;
+            background-color: rgba(222, 184, 135, 0.5);
+            border-radius: 8px;
+        }
+
+        /* Для прогресс-бара времени */
+        .timer-progress {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background-color: #8B4513;
+            transition: width 1s linear;
+        }
+
+        /* Адаптивная пауза между элементами */
+        @media (max-height: 600px) {
+            .header {
+                padding: 5px;
+                margin-bottom: 5px;
+            }
+            .score-container {
+                margin-bottom: 5px;
+            }
+            .board-container {
+                margin-bottom: 5px;
+            }
+            .instructions {
+                margin-top: 5px;
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ленур три в ряд</h1>
+        </div>
+        
+        <div class="score-container">
+            <div class="score-box">
+                <div id="score">Очки: 0</div>
+            </div>
+            <div class="timer-box">
+                <div id="timer">Время: 60 секунд</div>
+                <div class="timer-progress">
+                    <div class="timer-bar" id="timer-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="board-container">
+            <div id="board"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="reset-button">Начать заново</button>
+        </div>
+        
+        <div class="instructions">
+            Ленур следит за тобой        </div>
+    </div>
+
+    <script>
+        const boardSize = 8;  // Размер доски
+        const maxBlockSize = 60;  // Максимальный размер блока
+        const blockImages = [
+            'bomb.jpg',   // Бомба
+            'drova.jpg',  // Дрова
+            'tractor.jpg',  // Трактор
+            'pivo.jpg',  // Пиво
+            'spil.png',  // Спил
+        ];
+
+        const board = document.getElementById('board');
+        const resetButton = document.getElementById('reset-button');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const timerBar = document.getElementById('timer-bar');
+
+        // Звуки
+        const startSound = new Audio('start_game.mp3');  // Звук начала игры
+        const endSound = new Audio('end_game.mp3');  // Звук окончания игры
+        const fiveLinesSound = new Audio('five_lines.mp3');  // Звук при сжигании 5 линий
+        const backgroundMusic = new Audio('background_music.mp3');  // Фоновая музыка
+        const matchSound = new Audio('match.mp3'); // Звук при совпадении
+        const swapSound = new Audio('swap.mp3'); // Звук при обмене
+
+        // Предзагрузка изображений для улучшения производительности
+        function preloadImages() {
+            blockImages.forEach(image => {
+                const img = new Image();
+                img.src = image;
+            });
+        }
+
+        let gameBoard = [];
+        let selectedBlock = null;
+        let score = 0;
+        let timerInterval;
+        let timeLeft = 60; // Время в секундах
+        let initialTime = 60; // Исходное время для расчета процента оставшегося времени
+        let touchStartX, touchStartY; // Для отслеживания свайпов
+        let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Определяем оптимальный размер блока для мобильных устройств
+        function calculateBlockSize() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            // Используем меньшее из измерений для квадратной доски
+            const availableSpace = Math.min(screenWidth * 0.95, screenHeight * 0.6);
+            
+            // Вычисляем размер одного блока (с учетом отступов)
+            const blockSize = Math.floor(availableSpace / boardSize) - 4;
+            
+            // Ограничиваем максимальный размер блока
+            return Math.min(blockSize, maxBlockSize);
+        }
+
+        function addAnimationEndListener(element, className) {
+            element.addEventListener('animationend', function() {
+                element.classList.remove(className);
+            }, { once: true });
+        }
+
+        function generateBoard() {
+            gameBoard = [];
+            board.innerHTML = '';
+            const blockSize = calculateBlockSize();
+            
+            // Устанавливаем размер сетки
+            board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
+            board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
+            
+            // Заполняем доску элементами
+            for (let i = 0; i < boardSize; i++) {
+                const row = [];
+                for (let j = 0; j < boardSize; j++) {
+                    const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                    row.push(randomImage);
+                    
+                    const cell = document.createElement('div');
+                    cell.style.width = `${blockSize}px`;
+                    cell.style.height = `${blockSize}px`;
+                    cell.style.backgroundImage = `url(${randomImage})`;
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.classList.add('appearing');
+                    
+                    // Добавляем обработчики касаний/кликов
+                    if (isTouchDevice) {
+                        cell.addEventListener('touchstart', handleTouchStart);
+                        cell.addEventListener('touchend', (e) => handleTouchEnd(e, i, j, cell));
+                    } else {
+                        cell.addEventListener('click', () => handleBlockClick(i, j, cell));
+                    }
+                    
+                    board.appendChild(cell);
+                    addAnimationEndListener(cell, 'appearing');
+                }
+                gameBoard.push(row);
+            }
+            
+            // Проверяем, нет ли совпадений при генерации
+            checkAndResolveInitialMatches();
+        }
+
+        function checkAndResolveInitialMatches() {
+            // Проверяем совпадения и заменяем картинки, если они есть
+            let hasMatches = true;
+            let iterations = 0;
+            const MAX_ITERATIONS = 5; // Ограничиваем количество итераций
+            
+            while (hasMatches && iterations < MAX_ITERATIONS) {
+                iterations++;
+                let matchFound = false;
+                
+                // Проверяем горизонтальные совпадения
+                for (let row = 0; row < boardSize; row++) {
+                    for (let col = 0; col < boardSize - 2; col++) {
+                        const image = gameBoard[row][col];
+                        if (image && gameBoard[row][col + 1] === image && gameBoard[row][col + 2] === image) {
+                            // Заменяем один из блоков
+                            let newImage;
+                            do {
+                                newImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                            } while (newImage === image);
+                            
+                            gameBoard[row][col + 1] = newImage;
+                            const cellIndex = row * boardSize + (col + 1);
+                            board.children[cellIndex].style.backgroundImage = `url(${newImage})`;
+                            matchFound = true;
+                        }
+                    }
+                }
+                
+                // Проверяем вертикальные совпадения
+                for (let col = 0; col < boardSize; col++) {
+                    for (let row = 0; row < boardSize - 2; row++) {
+                        const image = gameBoard[row][col];
+                        if (image && gameBoard[row + 1][col] === image && gameBoard[row + 2][col] === image) {
+                            // Заменяем один из блоков
+                            let newImage;
+                            do {
+                                newImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                            } while (newImage === image);
+                            
+                            gameBoard[row + 1][col] = newImage;
+                            const cellIndex = (row + 1) * boardSize + col;
+                            board.children[cellIndex].style.backgroundImage = `url(${newImage})`;
+                            matchFound = true;
+                        }
+                    }
+                }
+                
+                hasMatches = matchFound;
+            }
+        }
+
+        // Функция для обработки начала касания
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+
+        // Функция для обработки окончания касания
+        function handleTouchEnd(e, row, col, cell) {
+            e.preventDefault();
+            if (!touchStartX || !touchStartY) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            const minSwipeDistance = 30; // Минимальное расстояние для срабатывания свайпа
+            
+            // Если это короткое касание, обрабатываем как обычный клик
+            if (Math.abs(diffX) < minSwipeDistance && Math.abs(diffY) < minSwipeDistance) {
+                handleBlockClick(row, col, cell);
+                return;
+            }
+            
+            // Определяем направление свайпа
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // Горизонтальный свайп
+                if (diffX > 0 && col < boardSize - 1) {
+                    // Свайп вправо
+                    swapByDirection(row, col, 0, 1);
+                } else if (diffX < 0 && col > 0) {
+                    // Свайп влево
+                    swapByDirection(row, col, 0, -1);
+                }
+            } else {
+                // Вертикальный свайп
+                if (diffY > 0 && row < boardSize - 1) {
+                    // Свайп вниз
+                    swapByDirection(row, col, 1, 0);
+                } else if (diffY < 0 && row > 0) {
+                    // Свайп вверх
+                    swapByDirection(row, col, -1, 0);
+                }
+            }
+            
+            // Сбрасываем координаты начала касания
+            touchStartX = null;
+            touchStartY = null;
+        }
+
+        // Функция для обмена блоков по направлению
+        function swapByDirection(row, col, rowDiff, colDiff) {
+            swapBlocks(row, col, row + rowDiff, col + colDiff);
+            if (!checkMatches()) {
+                // Возвращаем блоки на место, если нет совпадений
+                setTimeout(() => {
+                    swapBlocks(row + rowDiff, col + colDiff, row, col);
+                }, 500);
+            } else {
+                setTimeout(() => refillBoard(), 500);
+            }
+        }
+
+        function handleBlockClick(row, col, cell) {
+            // Если блок уже выбран, отменяем выбор
+            if (selectedBlock && selectedBlock.row === row && selectedBlock.col === col) {
+                cell.classList.remove('selected');
+                selectedBlock = null;
+                return;
+            }
+
+            // Если уже выбран другой блок
+            if (selectedBlock) {
+                const dx = Math.abs(selectedBlock.row - row);
+                const dy = Math.abs(selectedBlock.col - col);
+                
+                // Проверяем, что блоки соседние
+                if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+                    swapBlocks(selectedBlock.row, selectedBlock.col, row, col);
+                    if (!checkMatches()) {
+                        // Если нет совпадений, возвращаем блоки обратно
+                        setTimeout(() => {
+                            swapBlocks(row, col, selectedBlock.row, selectedBlock.col);
+                        }, 500);
+                    } else {
+                        // Если есть совпадения, заполняем пустые места
+                        setTimeout(() => refillBoard(), 500);
+                    }
+                }
+                
+                // Убираем выделение с предыдущего блока
+                board.children[selectedBlock.row * boardSize + selectedBlock.col].classList.remove('selected');
+                selectedBlock = null;
+            } else {
+                // Выбираем текущий блок
+                selectedBlock = { row, col, cell };
+                cell.classList.add('selected');
+            }
+        }
+
+        function swapBlocks(row1, col1, row2, col2) {
+            // Проигрываем звук обмена
+            if (swapSound.readyState >= 2) { // 2 = HAVE_CURRENT_DATA
+                swapSound.currentTime = 0;
+                swapSound.play().catch(e => console.log('Error playing swap sound:', e));
+            }
+            
+            // Меняем блоки в массиве
+            [gameBoard[row1][col1], gameBoard[row2][col2]] = [gameBoard[row2][col2], gameBoard[row1][col1]];
+            
+            // Меняем отображение блоков
+            const cell1 = board.children[row1 * boardSize + col1];
+            const cell2 = board.children[row2 * boardSize + col2];
+            
+            [cell1.style.backgroundImage, cell2.style.backgroundImage] = 
+                [cell2.style.backgroundImage, cell1.style.backgroundImage];
+        }
+
+        function checkMatches() {
+            let matches = [];
+            
+            // Проверка горизонтальных совпадений
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize - 2; col++) {
+                    const image = gameBoard[row][col];
+                    if (image && gameBoard[row][col + 1] === image && gameBoard[row][col + 2] === image) {
+                        matches.push([[row, col], [row, col + 1], [row, col + 2]]);
+                        
+                        // Проверяем, есть ли 4 в ряд
+                        if (col < boardSize - 3 && gameBoard[row][col + 3] === image) {
+                            matches[matches.length - 1].push([row, col + 3]);
+                            
+                            // Проверяем, есть ли 5 в ряд
+                            if (col < boardSize - 4 && gameBoard[row][col + 4] === image) {
+                                matches[matches.length - 1].push([row, col + 4]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Проверка вертикальных совпадений
+            for (let col = 0; col < boardSize; col++) {
+                for (let row = 0; row < boardSize - 2; row++) {
+                    const image = gameBoard[row][col];
+                    if (image && gameBoard[row + 1][col] === image && gameBoard[row + 2][col] === image) {
+                        matches.push([[row, col], [row + 1, col], [row + 2, col]]);
+                        
+                        // Проверяем, есть ли 4 в ряд
+                        if (row < boardSize - 3 && gameBoard[row + 3][col] === image) {
+                            matches[matches.length - 1].push([row + 3, col]);
+                            
+                            // Проверяем, есть ли 5 в ряд
+                            if (row < boardSize - 4 && gameBoard[row + 4][col] === image) {
+                                matches[matches.length - 1].push([row + 4, col]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Если есть совпадения
+            if (matches.length > 0) {
+                // Проигрываем звук совпадения
+                if (matchSound.readyState >= 2) {
+                    matchSound.currentTime = 0;
+                    matchSound.play().catch(e => console.log('Error playing match sound:', e));
+                }
+                
+                // Обрабатываем совпадения
+                matches.flat().forEach(([r, c]) => {
+                    gameBoard[r][c] = null;
+                    let cell = board.children[r * boardSize + c];
+                    cell.classList.add('disappearing');
+                    addAnimationEndListener(cell, 'disappearing');
+                    setTimeout(() => cell.style.backgroundImage = '', 500);
+                });
+                
+                // Обновляем счет
+                updateScore(matches);
+                
+                // Проигрываем специальный звук при 5 и более линиях
+                if (matches.length >= 5 && fiveLinesSound.readyState >= 2) {
+                    fiveLinesSound.currentTime = 0;
+                    fiveLinesSound.play().catch(e => console.log('Error playing five lines sound:', e));
+                }
+                
+                setTimeout(refillBoard, 600);
+                return true;
+            }
+            
+            return false;
+        }
+
+        function refillBoard() {
+            // Для каждого столбца
+            for (let col = 0; col < boardSize; col++) {
+                let emptyCells = [];
+                
+                // Собираем пустые ячейки, начиная снизу
+                for (let row = boardSize - 1; row >= 0; row--) {
+                    if (gameBoard[row][col] === null) {
+                        emptyCells.push(row);
+                    } else if (emptyCells.length > 0) {
+                        // Если нашли непустую ячейку и есть пустые ячейки ниже
+                        let newRow = emptyCells.shift();
+                        gameBoard[newRow][col] = gameBoard[row][col];
+                        gameBoard[row][col] = null;
+                        
+                        let cell = board.children[newRow * boardSize + col];
+                        cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
+                        cell.classList.add('falling');
+                        addAnimationEndListener(cell, 'falling');
+                        
+                        board.children[row * boardSize + col].style.backgroundImage = '';
+                        emptyCells.push(row);
+                    }
+                }
+                
+                // Заполняем оставшиеся пустые ячейки новыми случайными блоками
+                emptyCells.forEach(row => {
+                    const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                    gameBoard[row][col] = randomImage;
+                    
+                    let cell = board.children[row * boardSize + col];
+                    cell.style.backgroundImage = `url(${randomImage})`;
+                    cell.classList.add('appearing');
+                    addAnimationEndListener(cell, 'appearing');
+                });
+            }
+            
+            // Проверяем новые совпадения
+            setTimeout(checkMatches, 600);
+        }
+
+        function updateScore(matches) {
+            // Подсчитываем очки с бонусами за большие совпадения
+            let scoreIncrease = matches.reduce((sum, match) => {
+                if (match.length === 3) return sum + 10;       // 3 в ряд = 10 очков
+                else if (match.length === 4) return sum + 20;  // 4 в ряд = 20 очков
+                else return sum + 50;                          // 5 в ряд = 50 очков
+            }, 0);
+            
+            // Бонус за несколько совпадений сразу
+            if (matches.length > 1) {
+                scoreIncrease = Math.floor(scoreIncrease * (1 + 0.1 * (matches.length - 1)));
+            }
+            
+            score += scoreIncrease;
+            scoreDisplay.textContent = `Очки: ${score}`;
+            
+            // Добавляем время за комбо
+            if (matches.length >= 2) {
+                addBonusTime(matches.length * 2); // 2 секунды за каждое совпадение
+            }
+        }
+
+        function addBonusTime(seconds) {
+            timeLeft = Math.min(timeLeft + seconds, initialTime);
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            timerDisplay.textContent = `Время: ${timeLeft} секунд`;
+            const percentage = (timeLeft / initialTime) * 100;
+            timerBar.style.width = `${percentage}%`;
+            
+            // Меняем цвет прогресс-бара в зависимости от оставшегося времени
+            if (percentage > 60) {
+                timerBar.style.backgroundColor = '#8B4513'; // Коричневый
+            } else if (percentage > 30) {
+                timerBar.style.backgroundColor = '#DAA520'; // Золотистый
+            } else {
+                timerBar.style.backgroundColor = '#B22222'; // Красный
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    
+                    // Показываем сообщение с красивым модальным окном
+                    showGameOverModal();
+                    
+                    // Проигрываем звук окончания игры
+                    if (endSound.readyState >= 2) {
+                        endSound.play().catch(e => console.log('Error playing end sound:', e));
+                    }
+                    
+                    // Останавливаем фоновую музыку
+                    backgroundMusic.pause();
+                    disableGame();
+                }
+            }, 1000);
+        }
+
+        function showGameOverModal() {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = '#f5f5dc';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '10px';
+            modalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.maxWidth = '80%';
+            
+            const title = document.createElement('h2');
+            title.textContent = 'Время истекло!';
+            title.style.color = '#8B4513';
+            title.style.marginBottom = '10px';
+            
+            const scoreText = document.createElement('p');
+            scoreText.textContent = `Вы набрали ${score} очков`;
+            scoreText.style.fontSize = '18px';
+            scoreText.style.marginBottom = '20px';
+            
+            const button = document.createElement('button');
+            button.textContent = 'Играть снова';
+            button.style.backgroundColor = '#8B4513';
+            button.style.color = 'white';
+            button.style.border = 'none';
+            button.style.padding = '10px 20px';
+            button.style.borderRadius = '5px';
+            button.style.cursor = 'pointer';
+            
+            button.addEventListener('click', () => {
+                document.body.removeChild(modal);
+                resetGame();
+            });
+            
+            modalContent.appendChild(title);
+            modalContent.appendChild(scoreText);
+            modalContent.appendChild(button);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+
+      function disableGame() {
+    const cells = board.querySelectorAll('div');
+    cells.forEach(cell => {
+        cell.style.pointerEvents = 'none'; // Отключаем клики по ячейкам
+    });
+    
+    resetButton.textContent = 'Новая игра';
+    resetButton.style.animation = 'pulse 1s infinite';
+}
+
+function resetGame() {
+    // Сбрасываем переменные
+    selectedBlock = null;
+    score = 0;
+    timeLeft = initialTime = 60;
+    
+    // Обновляем отображение
+    scoreDisplay.textContent = `Очки: ${score}`;
+    updateTimerDisplay();
+    
+    // Генерируем новую доску
+    generateBoard();
+    
+    // Включаем элементы доски
+    const cells = board.querySelectorAll('div');
+    cells.forEach(cell => {
+        cell.style.pointerEvents = 'auto';
+    });
+    
+    // Сбрасываем кнопку
+    resetButton.textContent = 'Начать заново';
+    resetButton.style.animation = '';
+    
+    // Перезапускаем таймер
+    startTimer();
+    
+    // Проигрываем звук начала игры
+    if (startSound.readyState >= 2) {
+        startSound.play().catch(e => console.log('Error playing start sound:', e));
+    }
+    
+    // Запускаем фоновую музыку
+    if (backgroundMusic.readyState >= 2) {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.5;
+        backgroundMusic.play().catch(e => console.log('Error playing background music:', e));
+    }
+}
+
+// Обработчик изменения размера окна
+window.addEventListener('resize', () => {
+    const blockSize = calculateBlockSize();
+    
+    // Устанавливаем размер сетки
+    board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
+    board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
+    
+    // Обновляем размер всех ячеек
+    const cells = board.querySelectorAll('div');
+    cells.forEach(cell => {
+        cell.style.width = `${blockSize}px`;
+        cell.style.height = `${blockSize}px`;
+    });
+});
+
+// Обработчик для кнопки сброса
+resetButton.addEventListener('click', resetGame);
+
+// Инициализация игры
+preloadImages();
+generateBoard();
+resetGame();
+
+// Обработка нажатия на кнопку громкости
+document.addEventListener('keydown', function(event) {
+    // M - включить/выключить музыку
+    if (event.key === 'm' || event.key === 'м' || event.key === 'M' || event.key === 'М') {
+        if (backgroundMusic.paused) {
+            backgroundMusic.play().catch(e => console.log('Error playing background music:', e));
+        } else {
+            backgroundMusic.pause();
+        }
+    }
+});
+
+// Добавляем CSS-анимацию для кнопки
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+`);
+
+// Предотвращаем скролл на мобильных устройствах при свайпах
+document.addEventListener('touchmove', function(e) {
+    if (e.target.closest('#board')) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Проверяем наличие звуков и подготавливаем их
+function setupSounds() {
+    const sounds = [startSound, endSound, fiveLinesSound, backgroundMusic, matchSound, swapSound];
+    
+    sounds.forEach(sound => {
+        // Если звук не загружен, устанавливаем обработчик для предзагрузки
+        if (sound.readyState < 2) {
+            sound.addEventListener('canplaythrough', () => {
+                console.log('Sound loaded:', sound.src);
+            });
+            
+            sound.addEventListener('error', (e) => {
+                console.warn('Error loading sound:', e);
+            });
+        }
+    });
+}
+
+// Вызываем настройку звуков
+setupSounds();
+
+// Функция проверки возможных ходов
+function checkPossibleMoves() {
+    // Проверяем все возможные горизонтальные свапы
+    for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize - 1; col++) {
+            // Временно меняем блоки
+            [gameBoard[row][col], gameBoard[row][col + 1]] = [gameBoard[row][col + 1], gameBoard[row][col]];
+            
+            // Проверяем, есть ли совпадения
+            if (checkForPotentialMatches()) {
+                // Возвращаем блоки на место
+                [gameBoard[row][col], gameBoard[row][col + 1]] = [gameBoard[row][col + 1], gameBoard[row][col]];
+                return true;
+            }
+            
+            // Возвращаем блоки на место
+            [gameBoard[row][col], gameBoard[row][col + 1]] = [gameBoard[row][col + 1], gameBoard[row][col]];
+        }
+    }
+    
+    // Проверяем все возможные вертикальные свапы
+    for (let col = 0; col < boardSize; col++) {
+        for (let row = 0; row < boardSize - 1; row++) {
+            // Временно меняем блоки
+            [gameBoard[row][col], gameBoard[row + 1][col]] = [gameBoard[row + 1][col], gameBoard[row][col]];
+            
+            // Проверяем, есть ли совпадения
+            if (checkForPotentialMatches()) {
+                // Возвращаем блоки на место
+                [gameBoard[row][col], gameBoard[row + 1][col]] = [gameBoard[row + 1][col], gameBoard[row][col]];
+                return true;
+            }
+            
+            // Возвращаем блоки на место
+            [gameBoard[row][col], gameBoard[row + 1][col]] = [gameBoard[row + 1][col], gameBoard[row][col]];
+        }
+    }
+    
+    // Если нет возможных ходов, возвращаем false
+    return false;
+}
+
+// Функция проверки потенциальных совпадений 
+function checkForPotentialMatches() {
+    // Проверка горизонтальных совпадений
+    for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize - 2; col++) {
+            const image = gameBoard[row][col];
+            if (image && gameBoard[row][col + 1] === image && gameBoard[row][col + 2] === image) {
+                return true;
+            }
+        }
+    }
+    
+    // Проверка вертикальных совпадений
+    for (let col = 0; col < boardSize; col++) {
+        for (let row = 0; row < boardSize - 2; row++) {
+            const image = gameBoard[row][col];
+            if (image && gameBoard[row + 1][col] === image && gameBoard[row + 2][col] === image) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+// Функция перемешивания доски, если нет ходов
+function shuffleBoard() {
+    // Показываем сообщение о перемешивании
+    const message = document.createElement('div');
+    message.textContent = 'Перемешивание...';
+    message.style.position = 'absolute';
+    message.style.top = '50%';
+    message.style.left = '50%';
+    message.style.transform = 'translate(-50%, -50%)';
+    message.style.backgroundColor = 'rgba(139, 69, 19, 0.8)';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '100';
+    message.style.fontWeight = 'bold';
+    board.appendChild(message);
+    
+    // Перемешиваем все элементы
+    setTimeout(() => {
+        for (let row = 0; row < boardSize; row++) {
+            for (let col = 0; col < boardSize; col++) {
+                const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
+                gameBoard[row][col] = randomImage;
+                board.children[row * boardSize + col].style.backgroundImage = `url(${randomImage})`;
+                board.children[row * boardSize + col].classList.add('appearing');
+                addAnimationEndListener(board.children[row * boardSize + col], 'appearing');
+            }
+        }
+        
+        // Проверяем, есть ли совпадения после перемешивания
+        checkAndResolveInitialMatches();
+        
+        // Удаляем сообщение
+        board.removeChild(message);
+    }, 1000);
+}
+
+// Проверка на наличие ходов каждые 2 секунды
+setInterval(() => {
+    if (!checkPossibleMoves() && timeLeft > 0) {
+        shuffleBoard();
+    }
+}, 2000);
+</script>
+</body>
+</html>
