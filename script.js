@@ -1,4 +1,5 @@
 const boardSize = 8;
+const blockSize = 80; // Размер блока
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
@@ -20,6 +21,8 @@ let timerInterval;
 function generateBoard() {
     gameBoard = [];
     board.innerHTML = '';
+    board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
+    board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
 
     for (let i = 0; i < boardSize; i++) {
         const row = [];
@@ -27,6 +30,8 @@ function generateBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             row.push(randomImage);
             const cell = document.createElement('div');
+            cell.style.width = `${blockSize}px`;
+            cell.style.height = `${blockSize}px`;
             cell.style.backgroundImage = `url(${randomImage})`;
             cell.dataset.row = i;
             cell.dataset.col = j;
@@ -90,10 +95,12 @@ function checkMatches() {
     if (matches.length > 0) {
         matches.flat().forEach(([r, c]) => {
             gameBoard[r][c] = null;
-            board.children[r * boardSize + c].style.backgroundImage = '';
+            let cell = board.children[r * boardSize + c];
+            cell.style.animation = 'disappear 0.5s forwards';
+            setTimeout(() => cell.style.backgroundImage = '', 500);
         });
         updateScore(matches);
-        setTimeout(refillBoard, 500);
+        setTimeout(refillBoard, 600);
         return true;
     }
     return false;
@@ -109,7 +116,9 @@ function refillBoard() {
                 let newRow = emptyCells.shift();
                 gameBoard[newRow][col] = gameBoard[row][col];
                 gameBoard[row][col] = null;
-                board.children[newRow * boardSize + col].style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
+                let cell = board.children[newRow * boardSize + col];
+                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
+                cell.style.animation = 'fall 0.5s ease-out';
                 board.children[row * boardSize + col].style.backgroundImage = '';
                 emptyCells.push(row);
             }
@@ -117,10 +126,12 @@ function refillBoard() {
         emptyCells.forEach(row => {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             gameBoard[row][col] = randomImage;
-            board.children[row * boardSize + col].style.backgroundImage = `url(${randomImage})`;
+            let cell = board.children[row * boardSize + col];
+            cell.style.backgroundImage = `url(${randomImage})`;
+            cell.style.animation = 'appear 0.5s ease-in';
         });
     }
-    setTimeout(checkMatches, 500);
+    setTimeout(checkMatches, 600);
 }
 
 function updateScore(matches) {
@@ -136,19 +147,6 @@ resetButton.addEventListener('click', () => {
     scoreDisplay.textContent = `Очки: ${score}`;
     startTimer();
 });
-
-function startTimer() {
-    let timeLeft = 60;
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            alert('Время вышло! Ленур победил!');
-        }
-        timerDisplay.textContent = `Время: ${timeLeft}s`;
-    }, 1000);
-}
 
 generateBoard();
 startTimer();
