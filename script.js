@@ -1,5 +1,5 @@
 const boardSize = 8;
-const blockSize = 40; // Уменьшенный размер блока
+const blockSize = 70; // Обновленный размер блока для лучшего отображения
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
@@ -35,8 +35,8 @@ function generateBoard() {
             cell.style.backgroundImage = `url(${randomImage})`;
             cell.dataset.row = i;
             cell.dataset.col = j;
+            cell.classList.add('appearing');
             cell.addEventListener('click', () => handleBlockClick(i, j, cell));
-            cell.addEventListener('touchstart', (e) => handleBlockClick(i, j, cell));
             board.appendChild(cell);
         }
         gameBoard.push(row);
@@ -96,7 +96,7 @@ function checkMatches() {
         matches.flat().forEach(([r, c]) => {
             gameBoard[r][c] = null;
             let cell = board.children[r * boardSize + c];
-            cell.style.animation = 'disappear 0.5s forwards';
+            cell.classList.add('disappearing');
             setTimeout(() => cell.style.backgroundImage = '', 500);
         });
         updateScore(matches);
@@ -118,7 +118,7 @@ function refillBoard() {
                 gameBoard[row][col] = null;
                 let cell = board.children[newRow * boardSize + col];
                 cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
-                cell.style.animation = 'fall 0.5s ease-out';
+                cell.classList.add('falling');
                 board.children[row * boardSize + col].style.backgroundImage = '';
                 emptyCells.push(row);
             }
@@ -128,7 +128,7 @@ function refillBoard() {
             gameBoard[row][col] = randomImage;
             let cell = board.children[row * boardSize + col];
             cell.style.backgroundImage = `url(${randomImage})`;
-            cell.style.animation = 'appear 0.5s ease-in';
+            cell.classList.add('appearing');
         });
     }
     setTimeout(checkMatches, 600);
