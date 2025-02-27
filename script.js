@@ -1,5 +1,5 @@
-const boardSize = 8;
-const blockSize = 70;
+const boardSize = 8; // Увеличиваем количество блоков до 16x16
+const maxBlockSize = 70;  // Максимальный размер блока
 const blockImages = [
     'bomb.jpg',   // Бомба
     'drova.jpg',  // Дрова
@@ -19,6 +19,25 @@ let score = 0;
 let timerInterval;
 let timeLeft = 60; // Время в секундах
 
+// Масштаб для увеличения размера блоков в 1.5 раза
+let scaleFactor = 0.55;  // Увеличиваем размер блоков на 1.5
+
+// Функция для вычисления размера блока с учетом масштаба
+function calculateBlockSize() {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // Вычисляем максимально возможный размер блока, исходя из ширины экрана и размера доски
+    const blockWidth = Math.floor(screenWidth / boardSize);
+    const blockHeight = Math.floor(screenHeight / boardSize);
+
+    // Выбираем наименьший размер, чтобы все поместилось
+    const blockSize = Math.min(blockWidth, blockHeight, maxBlockSize);
+
+    // Применяем масштаб
+    return blockSize * scaleFactor;
+}
+
 function addAnimationEndListener(element, className) {
     element.addEventListener('animationend', function() {
         element.classList.remove(className);
@@ -28,6 +47,7 @@ function addAnimationEndListener(element, className) {
 function generateBoard() {
     gameBoard = [];
     board.innerHTML = '';
+    const blockSize = calculateBlockSize(); // Вычисляем размер блока с учетом масштаба
     board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
     board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
 
