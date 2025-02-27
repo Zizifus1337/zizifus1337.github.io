@@ -76,6 +76,7 @@ function swapBlocks(row1, col1, row2, col2) {
 
 function checkMatches() {
     let matches = [];
+    // Проверка по горизонтали
     for (let row = 0; row < boardSize; row++) {
         for (let col = 0; col < boardSize - 2; col++) {
             const image = gameBoard[row][col];
@@ -84,6 +85,7 @@ function checkMatches() {
             }
         }
     }
+    // Проверка по вертикали
     for (let col = 0; col < boardSize; col++) {
         for (let row = 0; row < boardSize - 2; row++) {
             const image = gameBoard[row][col];
@@ -92,6 +94,20 @@ function checkMatches() {
             }
         }
     }
+
+    // Проверка для сжигания блоков, если 2 блока по горизонтали и 2 блока по вертикали одного блока
+    for (let row = 0; row < boardSize - 1; row++) {
+        for (let col = 0; col < boardSize - 1; col++) {
+            const image = gameBoard[row][col];
+            if (image &&
+                gameBoard[row + 1][col] === image &&
+                gameBoard[row][col + 1] === image &&
+                gameBoard[row + 1][col + 1] === image) {
+                matches.push([ [row, col], [row + 1, col], [row, col + 1], [row + 1, col + 1] ]);
+            }
+        }
+    }
+
     if (matches.length > 0) {
         matches.flat().forEach(([r, c]) => {
             gameBoard[r][c] = null;
@@ -107,30 +123,38 @@ function checkMatches() {
 }
 
 function refillBoard() {
+    // Проходим по каждой колонке
     for (let col = 0; col < boardSize; col++) {
         let emptyCells = [];
+        
+        // Собираем все пустые ячейки в колонке
         for (let row = boardSize - 1; row >= 0; row--) {
             if (gameBoard[row][col] === null) {
-                emptyCells.push(row);
+                emptyCells.push(row); // Ячейка пуста
             } else if (emptyCells.length > 0) {
+                // Если есть пустые ячейки, сдвигаем блоки вниз
                 let newRow = emptyCells.shift();
-                gameBoard[newRow][col] = gameBoard[row][col];
-                gameBoard[row][col] = null;
+                gameBoard[newRow][col] = gameBoard[row][col];  // Перемещаем блок на пустую ячейку
+                gameBoard[row][col] = null;  // Очищаем старую ячейку
+
                 let cell = board.children[newRow * boardSize + col];
-                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
-                cell.classList.add('falling');
-                board.children[row * boardSize + col].style.backgroundImage = '';
-                emptyCells.push(row);
+                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage; // Переносим изображение
+                cell.classList.add('falling');  // Добавляем класс для анимации падения
+                board.children[row * boardSize + col].style.backgroundImage = ''; // Очищаем старую ячейку
             }
         }
+
+        // Теперь заполняем оставшиеся пустые ячейки новыми блоками
         emptyCells.forEach(row => {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             gameBoard[row][col] = randomImage;
             let cell = board.children[row * boardSize + col];
-            cell.style.backgroundImage = `url(${randomImage})`;
-            cell.classList.add('appearing');
+            cell.style.backgroundImage = `url(${randomImage})`;  // Заполняем новой картинкой
+            cell.classList.add('appearing');  // Добавляем класс для анимации появления
         });
     }
+    
+    // После того как все блоки опустились и новые добавились, снова проверяем на совпадения
     setTimeout(checkMatches, 600);
 }
 
