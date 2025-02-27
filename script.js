@@ -1,4 +1,4 @@
-const boardSize = 8;  // Увеличиваем количество блоков до 16x16
+const boardSize = 8;  // Размер доски
 const maxBlockSize = 70;  // Максимальный размер блока
 const blockImages = [
     'bomb.jpg',   // Бомба
@@ -54,8 +54,8 @@ function generateBoard() {
     gameBoard = [];
     board.innerHTML = '';
     const blockSize = calculateBlockSize(); // Вычисляем размер блока с учетом масштаба
-    board.style.gridTemplateColumns = repeat(${boardSize}, ${blockSize}px);
-    board.style.gridTemplateRows = repeat(${boardSize}, ${blockSize}px);
+    board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
+    board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
 
     for (let i = 0; i < boardSize; i++) {
         const row = [];
@@ -63,9 +63,9 @@ function generateBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             row.push(randomImage);
             const cell = document.createElement('div');
-            cell.style.width = ${blockSize}px;
-            cell.style.height = ${blockSize}px;
-            cell.style.backgroundImage = url(${randomImage});
+            cell.style.width = `${blockSize}px`;
+            cell.style.height = `${blockSize}px`;
+            cell.style.backgroundImage = `url(${randomImage})`;
             cell.dataset.row = i;
             cell.dataset.col = j;
             cell.classList.add('appearing');
@@ -140,90 +140,4 @@ function checkMatches() {
             setTimeout(() => cell.style.backgroundImage = '', 500);
         });
         updateScore(matches);
-        if (matches.length >= 5) {  // Если сгорело 5 линий
-            fiveLinesSound.play();
-        }
-        setTimeout(refillBoard, 600);
-        return true;
-    }
-    return false;
-}
-
-function refillBoard() {
-    for (let col = 0; col < boardSize; col++) {
-        let emptyCells = [];
-        for (let row = boardSize - 1; row >= 0; row--) {
-            if (gameBoard[row][col] === null) {
-                emptyCells.push(row);
-            } else if (emptyCells.length > 0) {
-                let newRow = emptyCells.shift();
-                gameBoard[newRow][col] = gameBoard[row][col];
-                gameBoard[row][col] = null;
-                let cell = board.children[newRow * boardSize + col];
-                cell.style.backgroundImage = board.children[row * boardSize + col].style.backgroundImage;
-                cell.classList.add('falling');
-                addAnimationEndListener(cell, 'falling');
-                board.children[row * boardSize + col].style.backgroundImage = '';
-                emptyCells.push(row);
-            }
-        }
-        emptyCells.forEach(row => {
-            const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
-            gameBoard[row][col] = randomImage;
-            let cell = board.children[row * boardSize + col];
-            cell.style.backgroundImage = url(${randomImage});
-            cell.classList.add('appearing');
-            addAnimationEndListener(cell, 'appearing');
-        });
-    }
-    setTimeout(checkMatches, 600);
-}
-
-function updateScore(matches) {
-    let scoreIncrease = matches.reduce((sum, match) => sum + (match.length === 3 ? 10 : match.length === 4 ? 15 : 25), 0);
-    score += scoreIncrease;
-    scoreDisplay.textContent = Очки: ${score};
-}
-
-function startTimer() {
-    if (timerInterval) clearInterval(timerInterval); // Останавливаем предыдущий таймер
-
-    timerInterval = setInterval(() => {
-        if (timeLeft > 0) {
-            timeLeft--;
-            timerDisplay.textContent = Время: ${timeLeft} секунд;
-        } else {
-            clearInterval(timerInterval);
-            alert('Время истекло! Игра закончена!');
-            endSound.play();  // Звук окончания игры
-            backgroundMusic.pause(); // Останавливаем фоновую музыку
-            disableGame();
-        }
-    }, 1000);
-}
-
-function disableGame() {
-    const cells = board.querySelectorAll('div');
-    cells.forEach(cell => {
-        cell.style.pointerEvents = 'none'; // Отключаем клики по ячейкам
-    });
-}
-
-resetButton.addEventListener('click', () => {
-    board.innerHTML = '';
-    generateBoard();
-    score = 0;
-    scoreDisplay.textContent = Очки: ${score};
-    timeLeft = 60; // Сброс таймера
-    timerDisplay.textContent = Время: ${timeLeft} секунд;
-    startTimer();
-    startSound.play();  // Звук начала игры
-    backgroundMusic.play();  // Включаем фоновую музыку
-    backgroundMusic.loop = true;  // Повторяем музыку
-});
-
-generateBoard();
-startTimer();
-startSound.play();  // Звук начала игры
-backgroundMusic.play();  // Включаем фоновую музыку
-backgroundMusic.loop = true;  // Повторяем музыку
+        if (
