@@ -1,4 +1,4 @@
-const boardSize = 8; // Увеличиваем количество блоков до 16x16
+const boardSize = 8;  // Увеличиваем количество блоков до 16x16
 const maxBlockSize = 70;  // Максимальный размер блока
 const blockImages = [
     'bomb.jpg',   // Бомба
@@ -54,8 +54,8 @@ function generateBoard() {
     gameBoard = [];
     board.innerHTML = '';
     const blockSize = calculateBlockSize(); // Вычисляем размер блока с учетом масштаба
-    board.style.gridTemplateColumns = `repeat(${boardSize}, ${blockSize}px)`;
-    board.style.gridTemplateRows = `repeat(${boardSize}, ${blockSize}px)`;
+    board.style.gridTemplateColumns = repeat(${boardSize}, ${blockSize}px);
+    board.style.gridTemplateRows = repeat(${boardSize}, ${blockSize}px);
 
     for (let i = 0; i < boardSize; i++) {
         const row = [];
@@ -63,9 +63,9 @@ function generateBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             row.push(randomImage);
             const cell = document.createElement('div');
-            cell.style.width = `${blockSize}px`;
-            cell.style.height = `${blockSize}px`;
-            cell.style.backgroundImage = `url(${randomImage})`;
+            cell.style.width = ${blockSize}px;
+            cell.style.height = ${blockSize}px;
+            cell.style.backgroundImage = url(${randomImage});
             cell.dataset.row = i;
             cell.dataset.col = j;
             cell.classList.add('appearing');
@@ -171,7 +171,7 @@ function refillBoard() {
             const randomImage = blockImages[Math.floor(Math.random() * blockImages.length)];
             gameBoard[row][col] = randomImage;
             let cell = board.children[row * boardSize + col];
-            cell.style.backgroundImage = `url(${randomImage})`;
+            cell.style.backgroundImage = url(${randomImage});
             cell.classList.add('appearing');
             addAnimationEndListener(cell, 'appearing');
         });
@@ -182,7 +182,7 @@ function refillBoard() {
 function updateScore(matches) {
     let scoreIncrease = matches.reduce((sum, match) => sum + (match.length === 3 ? 10 : match.length === 4 ? 15 : 25), 0);
     score += scoreIncrease;
-    scoreDisplay.textContent = `Очки: ${score}`;
+    scoreDisplay.textContent = Очки: ${score};
 }
 
 function startTimer() {
@@ -191,7 +191,7 @@ function startTimer() {
     timerInterval = setInterval(() => {
         if (timeLeft > 0) {
             timeLeft--;
-            timerDisplay.textContent = `Время: ${timeLeft} секунд`;
+            timerDisplay.textContent = Время: ${timeLeft} секунд;
         } else {
             clearInterval(timerInterval);
             alert('Время истекло! Игра закончена!');
@@ -213,9 +213,9 @@ resetButton.addEventListener('click', () => {
     board.innerHTML = '';
     generateBoard();
     score = 0;
-    scoreDisplay.textContent = `Очки: ${score}`;
+    scoreDisplay.textContent = Очки: ${score};
     timeLeft = 60; // Сброс таймера
-    timerDisplay.textContent = `Время: ${timeLeft} секунд`;
+    timerDisplay.textContent = Время: ${timeLeft} секунд;
     startTimer();
     startSound.play();  // Звук начала игры
     backgroundMusic.play();  // Включаем фоновую музыку
