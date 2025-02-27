@@ -14,39 +14,36 @@ body {
 /* Контейнер для игры */
 #game-container {
     text-align: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     width: 90%;
-    max-width: 600px;
-    max-height: 800px;
+    max-width: 650px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    position: relative;
     align-items: center;
+    position: relative;
 }
 
-/* Сетка для игрового поля */
+/* Игровое поле */
 #board {
     display: grid;
-    grid-template-columns: repeat(8, 85px);
-    grid-template-rows: repeat(8, 85px);
+    grid-template-columns: repeat(8, 70px);
+    grid-template-rows: repeat(8, 70px);
     gap: 5px;
     margin-bottom: 20px;
-    border: 5px solid #4CAF50;
+    border: 4px solid #4CAF50;
     border-radius: 15px;
     background: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     padding: 10px;
-    flex-grow: 1;
 }
 
 /* Стили для ячеек игрового поля */
 #board div {
-    width: 85px;
-    height: 85px;
+    width: 70px;
+    height: 70px;
     background-size: cover;
     background-position: center;
     display: flex;
@@ -88,83 +85,44 @@ body {
     transform: translateY(-2px);
 }
 
-#reset-button:active {
-    background-color: #388e3c;
-    transform: translateY(2px);
+/* Стиль для отображения очков и времени */
+#score, #timer {
+    font-size: 1.3em;
+    margin-top: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-#reset-button:disabled {
-    background-color: #b5e7a0;
-    cursor: not-allowed;
-}
-
-/* Стиль для отображения очков */
 #score {
-    font-size: 1.3em;
-    margin-top: 10px;
     color: #4CAF50;
-    font-weight: bold;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Стиль для отображения времени */
 #timer {
-    font-size: 1.3em;
     color: #ff4081;
-    font-weight: bold;
-    margin-top: 10px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Стиль для отображения сообщений */
-#message {
-    font-size: 1.8em;
-    color: #ff4081;
-    margin-top: 30px;
-    font-weight: bold;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
-}
-
-/* Анимация исчезновения блоков */
+/* Анимации */
 @keyframes disappear {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0);
-    }
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0); }
 }
 
 #board div.disappearing {
     animation: disappear 0.5s forwards;
 }
 
-/* Анимация появления блоков */
 @keyframes appear {
-    0% {
-        opacity: 0;
-        transform: scale(0);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 #board div.appearing {
     animation: appear 0.5s forwards;
 }
 
-/* Анимация падения блоков */
 @keyframes fall {
-    0% {
-        transform: translateY(-50px);
-    }
-    100% {
-        transform: translateY(0);
-    }
+    0% { transform: translateY(-50px); }
+    100% { transform: translateY(0); }
 }
 
 #board div.falling {
@@ -175,34 +133,6 @@ body {
 @media screen and (max-width: 600px) {
     #game-container {
         width: 95%;
-        max-width: 480px;
-        padding: 20px;
-    }
-
-    #board {
-        grid-template-columns: repeat(8, 70px);
-        grid-template-rows: repeat(8, 70px);
-    }
-
-    #board div {
-        width: 70px;
-        height: 70px;
-    }
-
-    #score, #timer {
-        font-size: 1.2em;
-    }
-
-    #reset-button {
-        padding: 12px 20px;
-        font-size: 1.1em;
-    }
-}
-
-@media screen and (max-width: 400px) {
-    #game-container {
-        width: 95%;
-        max-width: 360px;
     }
 
     #board {
@@ -214,17 +144,16 @@ body {
         width: 60px;
         height: 60px;
     }
+}
 
-    #score, #timer {
-        font-size: 1.1em;
+@media screen and (max-width: 400px) {
+    #board {
+        grid-template-columns: repeat(8, 50px);
+        grid-template-rows: repeat(8, 50px);
     }
 
-    #reset-button {
-        padding: 10px 18px;
-        font-size: 1em;
-    }
-
-    #message {
-        font-size: 1.6em;
+    #board div {
+        width: 50px;
+        height: 50px;
     }
 }
